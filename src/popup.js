@@ -32,15 +32,26 @@ import './popup.css';
     document.getElementById('counter').innerHTML = initialValue;
 
     document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
+      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        const tab = tabs[0];
+
+        chrome.tabs.sendMessage(
+          tab.id,
+          {
+            type: 'COUNT',
+            payload: {
+              count: newCount,
+            },
+          },
+          response => {
+            console.log('Current count value passed to contentScript file');
+          }
+        );
       });
     });
 
     document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
+      
     });
   }
 
@@ -61,22 +72,7 @@ import './popup.css';
 
         // Communicate with content script of
         // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            response => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
-        });
+        
       });
     });
   }
@@ -98,15 +94,5 @@ import './popup.css';
   document.addEventListener('DOMContentLoaded', restoreCounter);
 
   // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    response => {
-      console.log(response.message);
-    }
-  );
+ 
 })();

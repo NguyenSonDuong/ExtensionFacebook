@@ -1,4 +1,6 @@
 /* normalize css starts here */
+
+
 *,
 *::before,
 *::after {
@@ -15,8 +17,8 @@ html {
 }
 
 body {
-    width: 350px;
-    height: 300px;
+    width: 550px;
+    height: 500px;
 }
 
 .app {
@@ -26,11 +28,10 @@ body {
     justify-content: center;
     flex-direction: column;
     text-align: center;
-    padding: 20px;
+    padding: 10px;
 }
 
 .title {
-    font-size: 18px;
     font-weight: 600;
     margin-bottom: 10px;
 }
@@ -40,7 +41,6 @@ body {
 }
 
 code {
-    font-size: 12px;
     font-family: inherit;
     background-color: rgba(254, 237, 185, .3);
     padding: 2px 4px;
@@ -50,11 +50,6 @@ code {
 .counter-label {
     font-size: 12px;
     margin-bottom: 5px;
-}
-
-.counter {
-    font-size: 36px;
-    font-weight: 700;
 }
 
 .button-container {
@@ -90,3 +85,4 @@ code {
     border: .5px dashed #000;
     opacity: .1;
 }
+
