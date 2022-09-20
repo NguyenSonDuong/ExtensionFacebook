@@ -5,12 +5,13 @@ let progressBar = document.getElementById('progressBar');
 
 (function() {
   
-  chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
-      if(message.type == 'PROCESS_LOAD'){
-        progressBar.setAttribute("aria-valuemax",message.data.count)
-        progressBar.setAttribute("aria-valuenow",message.data.process)
-      }
-  });
+chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+  console.log(message);
+    if(message.type == 'PROCESS_LOAD'){
+      progressBar.setAttribute("aria-valuemax",message.data.count)
+      progressBar.setAttribute("aria-valuenow",message.data.process)
+    }
+});
 document.getElementById('btnScan').addEventListener('click', function (e) {
   chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
     chrome.tabs.sendMessage(tabs[0].id, 
