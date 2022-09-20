@@ -29,29 +29,37 @@ chrome.runtime.onMessage.addListener(
           alert("Mở trang facebook rồi hãng chạy code nhá 😑"); 
       }
     }
-    if(request.type == 'GET_DATA'){
-      console.log("XIn chào");
-        try{
-          let sourceData = document.documentElement.innerHTML;
-          useid = regexUserID.exec(sourceData)[1];
-          token = regexToken.exec(sourceData)[1];
-          postid = regexidPost.exec(document.URL)[2];
-          groupsID = regexidGroups.exec(sourceData)[1];
-          isConnect = true;
-          console.log(useid + "==" + token + "==" + groupsID+"_"+postid);
-          sendResponse({
-            type:'SEND_DATA',
-            status:'success',
-            data: {
-              post_id:postid,
-              groups_ID:groupsID,
-              token_user:token
-            }
-          });
-        }catch(e){  
-          sendResponse({status: "error"});
-          console.log(e);
+    if(request.type == 'RELOAD_PAGE'){
+      location.reload();
+      sendResponse({
+        type:'RELOAD_COMPLETE',
+        status:'success',
+        data: {
         }
+      })
+    }
+    if(request.type == 'GET_DATA'){
+      try{
+        let sourceData = document.documentElement.innerHTML;
+        useid = regexUserID.exec(sourceData)[1];
+        token = regexToken.exec(sourceData)[1];
+        postid = regexidPost.exec(document.URL)[2];
+        groupsID = regexidGroups.exec(sourceData)[1];
+        isConnect = true;
+        console.log(useid + "==" + token + "==" + groupsID+"_"+postid);
+        sendResponse({
+          type:'SEND_DATA',
+          status:'success',
+          data: {
+            post_id:postid,
+            groups_ID:groupsID,
+            token_user:token
+          }
+        });
+      }catch(e){  
+        sendResponse({status: "error"});
+        console.log(e);
+      }
     }
   }
 );
@@ -112,8 +120,7 @@ let API = (user_id, token, end_cursor, id_post) => {
                                 } 
                                 timeOut = 3500; 
                                 for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
-                                  document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Loadding: "+ dataComment.length +"/"+ obj["data"]["node"]["display_comments"]["count"];
-                                  dataComment.push(
+                                dataComment.push(
                                   { 
                                       "username": item["node"]["author"]["name"], 
                                       "message": (item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"], 
@@ -141,11 +148,9 @@ let API = (user_id, token, end_cursor, id_post) => {
                                   });
                                 }
                             } catch (e) { 
-                              console.error(e); 
                               let obj = JSON.parse(data.substring(0, data.indexOf('{"label":"VideoPlaye'))); 
                               if (obj["data"] == undefined || obj["data"] == null) { 
                                 timeOut += 1000; 
-                                console.log(timeOut); 
                                 setTimeout(() => { 
                                   API(user_id, token, end_cursor, id_post); 
                                 }, timeOut); 
@@ -154,7 +159,6 @@ let API = (user_id, token, end_cursor, id_post) => {
                               console.log(obj);
                               timeOut = 3500; 
                               for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
-                                document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Loadding: "+ dataComment.length +"/"+ obj["data"]["node"]["display_comments"]["count"];
                                 dataComment.push(
                                 { 
                                   "username": item["node"]["author"]["name"], 

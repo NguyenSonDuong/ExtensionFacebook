@@ -5,19 +5,19 @@
 // For more information on background script,
 // See https://developer.chrome.com/extensions/background_pages
 
-chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-  // const tab = tabs[0];
+// chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+//   // const tab = tabs[0];
 
-  // var callback = function(details) {
-  //   alert(details);
-  //   return {requestHeaders: details.requestHeaders};
-  // };
-  // var filter = {urls: ["<all_urls>"]};
-  // var opt_extraInfoSpec = [ "requestHeaders"];
+//   // var callback = function(details) {
+//   //   alert(details);
+//   //   return {requestHeaders: details.requestHeaders};
+//   // };
+//   // var filter = {urls: ["<all_urls>"]};
+//   // var opt_extraInfoSpec = [ "requestHeaders"];
   
-  // chrome.webRequest.onBeforeSendHeaders.addListener(
-  //       callback, filter, opt_extraInfoSpec);
-});
+//   // chrome.webRequest.onBeforeSendHeaders.addListener(
+//   //       callback, filter, opt_extraInfoSpec);
+// });
 
 
 // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
