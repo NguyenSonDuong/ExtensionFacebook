@@ -6,39 +6,57 @@ const regexUserID = /\"USER_ID\"\:\"([0-9]+)\"/gm;
 const regexToken = /\"token\":\"(.+?)\"/gm;
 const regexidPost = /www\.facebook\.com\/groups\/(.+?)\/posts\/([0-9]+?)\//gm;
 const regexidGroups = /content="fb:\/\/group\/([0-9]+)"/gm;
+let useid;
+let token;
+let groupsID;
+let postid;
+let isConnect = false;
 
-setInterval(() => {
-  if(document.getElementById("checkComment08042010") != undefined) {
-    return;
-  }
-  try{
-    let data = document.querySelector('div[aria-haspopup="menu"]').parentElement.parentElement;
-    let parr = document.querySelector('div[aria-haspopup="menu"]').parentElement.parentElement.parentElement;
-    let clone = data.cloneNode(true);
-    clone.setAttribute("id","checkComment08042010");
-    clone.firstChild.firstChild.innerHTML = "Xuất";
-    clone.firstChild.firstChild.setAttribute("style","color: white;font-weight: bold;");
-    clone.classList.remove("kgzac55p");
-    let sourceData = document.documentElement.innerHTML;
-    let useid = regexUserID.exec(sourceData)[1];
-    let token = regexToken.exec(sourceData)[1];
-    let postid = regexidPost.exec(document.URL)[2];
-    let groupsID = regexidGroups.exec(sourceData)[1];
-    console.log(useid + "==" + token + "==" + groupsID+"_"+postid);
-    clone.addEventListener("click",()=>{
-      clone.firstChild.firstChild.innerHTML = "Loadding..."
+
+function SendmessToPopup(mess){
+  chrome.runtime.sendMessage(mess, function (response) {
+      console.dir(response);
+  });
+}
+
+
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    if (isConnect && request.type == 'RUN') {
       if (document.URL.includes("facebook.com")) {
         API(useid, token, "", groupsID+"_"+postid); 
       } else { 
           alert("Mở trang facebook rồi hãng chạy code nhá 😑"); 
       }
-    })
-    parr.appendChild(clone);
-  }catch(e){  
-    console.log(e);
+    }
+    if(request.type == 'GET_DATA'){
+      console.log("XIn chào");
+        try{
+          let sourceData = document.documentElement.innerHTML;
+          useid = regexUserID.exec(sourceData)[1];
+          token = regexToken.exec(sourceData)[1];
+          postid = regexidPost.exec(document.URL)[2];
+          groupsID = regexidGroups.exec(sourceData)[1];
+          isConnect = true;
+          console.log(useid + "==" + token + "==" + groupsID+"_"+postid);
+          sendResponse({
+            type:'SEND_DATA',
+            status:'success',
+            data: {
+              post_id:postid,
+              groups_ID:groupsID,
+              token_user:token
+            }
+          });
+        }catch(e){  
+          sendResponse({status: "error"});
+          console.log(e);
+        }
+    }
   }
-  
-},5000)
+);
+
+
 
 let downloadCSVFromJson = (filename, arrayOfJson) => {
   // convert JSON to CSV
@@ -103,19 +121,24 @@ let API = (user_id, token, end_cursor, id_post) => {
                                       "link_comment": item["node"]["url"] ,
                                   }); 
                                 } 
-                                console.log(dataComment); 
+                                SendmessToPopup({
+                                  type:"PROCESS_LOAD",
+                                  data:{
+                                    count:obj["data"]["node"]["display_comments"]["count"],
+                                    process:obj["data"]["node"]["display_comments"]["edges"].length
+                                  }
+                                });
                                 if (obj["data"]["node"]["display_comments"]["page_info"]["has_next_page"]) 
                                     setTimeout(() => { 
                                         API(user_id, token, obj["data"]["node"]["display_comments"]["page_info"]["end_cursor"], id_post); 
                                     }, timeOut); 
                                 else { 
-                                    alert("Quét xong nhận kết quả ở đây"); 
-                                    document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Xuất";
-                                    // JSONToCSVConvertor(dataComment, "Comment_"+id_post,id_post)
-                                    downloadCSVFromJson("Comment_"+id_post,dataComment);
-                                    // Download("data.json", JSON.stringify(dataComment)); 
-                                    // Download("data.txt", dataNotJson); 
-                                    // document.write(JSON.stringify(dataComment)); 
+                                  downloadCSVFromJson("Comment_"+id_post,dataComment);
+                                  SendmessToPopup({
+                                    type:"SUCCESS_LOAD",
+                                    data:{
+                                    }
+                                  });
                                 }
                             } catch (e) { 
                               console.error(e); 
@@ -141,19 +164,24 @@ let API = (user_id, token, end_cursor, id_post) => {
                                 }); 
                                 // dataNotJson += item["node"]["author"]["name"] + "\t" + item["node"]["author"]["id"] + "\t" + item["node"]["author"]["url"] + "\t" + ((item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"]).replace(/(?:\r\n|\r|\n)/g, "") + "\t" + item["node"]["url"] + "\n";
                               } 
-                              console.log(dataComment); 
+                              SendmessToPopup({
+                                type:"PROCESS_LOAD",
+                                data:{
+                                  count:obj["data"]["node"]["display_comments"]["count"],
+                                  process:obj["data"]["node"]["display_comments"]["edges"].length
+                                }
+                              });
                               if (obj["data"]["node"]["display_comments"]["page_info"]["has_next_page"]) 
                                 setTimeout(() => { 
                                   API(user_id, token, obj["data"]["node"]["display_comments"]["page_info"]["end_cursor"], id_post); 
                                 }, timeOut); 
                               else { 
-                                alert("Quét xong nhận kết quả ở đây"); 
-                                document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Xuất";
-                                // JSONToCSVConvertor(dataComment, "Comment_"+id_post,id_post)
                                 downloadCSVFromJson("Comment_"+id_post,dataComment);
-                                // Download("data.json", JSON.stringify(dataComment)); 
-                                // Download("data.txt", dataNotJson); 
-                                // document.write(JSON.stringify(dataComment)); 
+                                SendmessToPopup({
+                                  type:"SUCCESS_LOAD",
+                                  data:{
+                                  }
+                                });
                               } 
                             }
                         });
