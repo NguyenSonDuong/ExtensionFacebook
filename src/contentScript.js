@@ -94,6 +94,7 @@ let API = (user_id, token, end_cursor, id_post) => {
                                 } 
                                 timeOut = 3500; 
                                 for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
+                                  document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Loadding: "+ dataComment.length +"/"+ obj["data"]["node"]["display_comments"]["count"];
                                   dataComment.push(
                                   { 
                                       "username": item["node"]["author"]["name"], 
@@ -130,6 +131,7 @@ let API = (user_id, token, end_cursor, id_post) => {
                               console.log(obj);
                               timeOut = 3500; 
                               for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
+                                document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Loadding: "+ dataComment.length +"/"+ obj["data"]["node"]["display_comments"]["count"];
                                 dataComment.push(
                                 { 
                                   "username": item["node"]["author"]["name"], 
