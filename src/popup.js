@@ -1,98 +1,46 @@
 'use strict';
-
-import './popup.css';
+let tvGroups = document.getElementById('tvGroups');
+let tvPosts = document.getElementById('tvPosts');
+let progressBar = document.getElementById('progressBar');
 
 (function() {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
-
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: cb => {
-      chrome.storage.sync.get(['count'], result => {
-        cb(result.count);
-      });
-    },
-    set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
+  
+  chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+      if(message.type == 'PROCESS_LOAD'){
+        progressBar.setAttribute("aria-valuemax",message.data.count)
+        progressBar.setAttribute("aria-valuenow",message.data.process)
+      }
+  });
+document.getElementById('btnScan').addEventListener('click', function (e) {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, 
+      {
+        type: "RUN"
+      }
+    , function(response) {
+      console.log(response.farewell);
+    });
+  });
+  
+})
+window.onload = function() {
+  chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+    chrome.tabs.sendMessage(tabs[0].id, 
+      {
+        type: "GET_DATA"
+      }
+    , function(response) {
+        console.log(response);
+        if(response.status == 'success') {
+          tvGroups.value = response.data.groups_ID;
+          tvPosts.value = response.data.post_id;
         }
-      );
-    },
-  };
-
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
-
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-        const tab = tabs[0];
-
-        chrome.tabs.sendMessage(
-          tab.id,
-          {
-            type: 'COUNT',
-            payload: {
-              count: newCount,
-            },
-          },
-          response => {
-            console.log('Current count value passed to contentScript file');
-          }
-        );
-      });
     });
-
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      
-    });
-  }
-
-  function updateCounter({ type }) {
-    counterStorage.get(count => {
-      let newCount;
-
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
-
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
-
-        // Communicate with content script of
-        // active tab by sending a message
-        
-      });
-    });
-  }
-
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get(count => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', restoreCounter);
-
-  // Communicate with background file by sending a message
+  });
+}
  
 })();
+
+
+
+
