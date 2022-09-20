@@ -132,9 +132,12 @@ let API = (user_id, token, end_cursor, id_post) => {
                                         API(user_id, token, obj["data"]["node"]["display_comments"]["page_info"]["end_cursor"], id_post); 
                                     }, timeOut); 
                                 else { 
-                                    alert("Quét xong nhận kết quả ở đây"); 
-                                    document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Xuất";
-                                    downloadCSVFromJson("Comment_"+id_post,dataComment);
+                                  downloadCSVFromJson("Comment_"+id_post,dataComment);
+                                  SendmessToPopup({
+                                    type:"SUCCESS_LOAD",
+                                    data:{
+                                    }
+                                  });
                                 }
                             } catch (e) { 
                               console.error(e); 
@@ -166,19 +169,17 @@ let API = (user_id, token, end_cursor, id_post) => {
                                   process:obj["data"]["node"]["display_comments"]["edges"].length
                                 }
                               });
-                              console.log(dataComment); 
                               if (obj["data"]["node"]["display_comments"]["page_info"]["has_next_page"]) 
                                 setTimeout(() => { 
                                   API(user_id, token, obj["data"]["node"]["display_comments"]["page_info"]["end_cursor"], id_post); 
                                 }, timeOut); 
                               else { 
-                                alert("Quét xong nhận kết quả ở đây"); 
-                                document.getElementById("checkComment08042010").firstChild.firstChild.innerHTML = "Xuất";
-                                // JSONToCSVConvertor(dataComment, "Comment_"+id_post,id_post)
                                 downloadCSVFromJson("Comment_"+id_post,dataComment);
-                                // Download("data.json", JSON.stringify(dataComment)); 
-                                // Download("data.txt", dataNotJson); 
-                                // document.write(JSON.stringify(dataComment)); 
+                                SendmessToPopup({
+                                  type:"SUCCESS_LOAD",
+                                  data:{
+                                  }
+                                });
                               } 
                             }
                         });

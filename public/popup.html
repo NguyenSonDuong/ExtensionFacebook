@@ -20,9 +20,16 @@
       <input type="number" class="form-control" id="tvPosts" placeholder="100000000">
     </div>
     <button class="w-auto btn btn-success mt-3" id="btnScan">Scan Comment</button>
-    <div class="progress mt-3">
-      <div class="progress-bar bg-danger" id="progressBar" role="progressbar" style="width: 100%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    <div id="progress" style="display:none" >
+      <h3 class="text-center align-middle">Loadding...</h3>
+      <div class="progress mt-3 mx-5">
+        <div class="progress-bar bg-danger progress-bar-animated" id="progressBar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="0"></div>
+      </div>
     </div>
+    <h2 id="notifi" class="text-center align-middle mt-4" style="display:none">
+      THÀNH CÔNG
+    </h2>
+    
   </div>
   <script src="popup.js"></script>
 
