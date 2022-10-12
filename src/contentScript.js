@@ -122,10 +122,18 @@ let API = (user_id, token, end_cursor, id_post) => {
                                 for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
                                 dataComment.push(
                                   { 
-                                      "username": item["node"]["author"]["name"], 
-                                      "message": (item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"], 
-                                      "link_user": item["node"]["author"]["url"], 
-                                      "link_comment": item["node"]["url"] ,
+                                    "author": {
+                                      "__typename": item["node"]["author"]["__typename"],
+                                      "id": item["node"]["author"]["id"],
+                                      "name": item["node"]["author"]["name"],
+                                      "gender": "FEMALE",
+                                      "link": item["node"]["author"]["url"],
+                                      "avatar": ""
+                                    },
+                                    "url": item["node"]["url"] ,
+                                    "__typename": item["node"]["__typename"] ,
+                                    "created_time": item["node"]["created_time"],
+                                    "message": (item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"], 
                                   }); 
                                 } 
                                 SendmessToPopup({
@@ -143,8 +151,7 @@ let API = (user_id, token, end_cursor, id_post) => {
                                   downloadCSVFromJson("Comment_"+id_post,dataComment);
                                   SendmessToPopup({
                                     type:"SUCCESS_LOAD",
-                                    data:{
-                                    }
+                                    data:dataComment
                                   });
                                 }
                             } catch (e) { 
@@ -160,12 +167,20 @@ let API = (user_id, token, end_cursor, id_post) => {
                               timeOut = 3500; 
                               for (let item of obj["data"]["node"]["display_comments"]["edges"]) { 
                                 dataComment.push(
-                                { 
-                                  "username": item["node"]["author"]["name"], 
-                                  "message": (item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"], 
-                                  "link_user": item["node"]["author"]["url"], 
-                                  "link_comment": item["node"]["url"] ,
-                                }); 
+                                  { 
+                                    "author": {
+                                      "__typename": item["node"]["author"]["__typename"],
+                                      "id": item["node"]["author"]["id"],
+                                      "name": item["node"]["author"]["name"],
+                                      "gender": item["node"]["author"]["gender"],
+                                      "link": item["node"]["author"]["url"],
+                                      "avatar": ""
+                                    },
+                                    "url": item["node"]["url"] ,
+                                    "__typename": item["node"]["__typename"] ,
+                                    "created_time": item["node"]["created_time"],
+                                    "message": (item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"], 
+                                  }); 
                                 // dataNotJson += item["node"]["author"]["name"] + "\t" + item["node"]["author"]["id"] + "\t" + item["node"]["author"]["url"] + "\t" + ((item["node"]["body"] == undefined || item["node"]["body"] == null) ? "" : item["node"]["body"]["text"]).replace(/(?:\r\n|\r|\n)/g, "") + "\t" + item["node"]["url"] + "\n";
                               } 
                               SendmessToPopup({
