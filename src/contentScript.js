@@ -21,9 +21,16 @@ function SendmessToPopup(mess){
 
 
 chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
+  async function(request, sender, sendResponse) {
+    console.log(request);
     if (isConnect && request.type == 'RUN') {
       if (document.URL.includes("facebook.com")) {
+        
+        if(!postid || !groupsID)
+        {
+          postid = request.data.id_post;
+          groupsID = request.data.id_groups;
+        }
         API(useid, token, "", groupsID+"_"+postid); 
       } else { 
           alert("Mở trang facebook rồi hãng chạy code nhá 😑"); 
@@ -43,10 +50,17 @@ chrome.runtime.onMessage.addListener(
         let sourceData = document.documentElement.innerHTML;
         useid = regexUserID.exec(sourceData)[1];
         token = regexToken.exec(sourceData)[1];
-        postid = regexidPost.exec(document.URL)[2];
-        groupsID = regexidGroups.exec(sourceData)[1];
+        
         isConnect = true;
+
+        let regex = /facebook.com(.+$)/gm
+
+        let data = await APIGetInforLink(useid,token,regex.exec(document.URL)[1]);
+        postid = data["post_id"];
+        groupsID = data["group_id"];
         console.log(useid + "==" + token + "==" + groupsID+"_"+postid);
+        //560495758018219
+        //  
         sendResponse({
           type:'SEND_DATA',
           status:'success',
@@ -78,12 +92,62 @@ let downloadCSVFromJson = (filename, arrayOfJson) => {
   // Create link and download
   var link = document.createElement('a');
   link.setAttribute('href', 'data:text/csv;charset=utf-8,%EF%BB%BF' + encodeURIComponent(csv));
-  link.setAttribute('download', filename);
+  link.setAttribute('download', filename);  
   link.style.visibility = 'hidden';
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 };
+
+let APIGetInforLink = async (user_id, token,link)=>{
+  let res = await fetch("https://www.facebook.com/ajax/navigation/", {
+  "headers": {
+    "accept": "*/*",
+    "accept-language": "en-US,en;q=0.9",
+    "content-type": "application/x-www-form-urlencoded",
+    "sec-ch-prefers-color-scheme": "light",
+    "sec-ch-ua": "\"Chromium\";v=\"106\", \"Google Chrome\";v=\"106\", \"Not;A=Brand\";v=\"99\"",
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": "\"Windows\"",
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "viewport-width": "1707",
+    "x-fb-lsd": "iurDPnZayM9LpvINQDVKBU",
+    "x-fb-qpl-active-flows": "931594241"
+  },
+  "referrer": "https://www.facebook.com/",
+  "referrerPolicy": "origin-when-cross-origin",
+  "body": `client_previous_actor_id=${user_id}&route_url=${link}&routing_namespace=fb_comet&__user=${user_id}&__a=1&dpr=1.5&__ccg=GOOD&__comet_req=15&fb_dtsg=${token}`,
+  "method": "POST",
+  "mode": "cors",
+  "credentials": "include"
+});
+let regexx = /[0-9]+$/gm;
+let text = await res.text();
+console.log(text);
+let txtMail = text.replace("for (;;);","").trim();
+let jsonObj = JSON.parse(txtMail);
+let postID = "";
+let groupID = jsonObj["payload"]["payload"]["result"]["exports"]["hostableView"]["props"]["groupID"];
+if(jsonObj["payload"]["payload"]["result"]["exports"]["hostableView"]["props"]["storyID"]){
+  let basDecode = atob(jsonObj["payload"]["payload"]["result"]["exports"]["hostableView"]["props"]["storyID"]);
+  postID = regexx.exec(basDecode)[0];
+  console.log(postID);
+}
+if(jsonObj["payload"]["payload"]["result"]["exports"]["hostableView"]["props"]["hoistStories"] && jsonObj["payload"]["payload"]["result"]["hostableView"]["props"]["hoistStories"][0]){
+  let basDecode = atob(jsonObj["payload"]["payload"]["result"]["exports"]["hostableView"]["props"]["hoistStories"][0]);
+  postID = regexx.exec(basDecode)[0];
+  console.log(postID);
+}
+let outputData = {
+  group_id: groupID,
+  post_id: postID
+}
+
+return outputData;
+}
+
 let API = (user_id, token, end_cursor, id_post) => {
     fetch("https://www.facebook.com/api/graphql/",
         {
@@ -151,7 +215,11 @@ let API = (user_id, token, end_cursor, id_post) => {
                                   downloadCSVFromJson("Comment_"+id_post,dataComment);
                                   SendmessToPopup({
                                     type:"SUCCESS_LOAD",
-                                    data:dataComment
+                                    data:dataComment,
+                                    id_groups: id_post.split('_')[0],
+                                    name_groups: "",
+                                    id_post: id_post.split('_')[1],
+                                    create_time: Date.now(),
                                   });
                                 }
                             } catch (e) { 
@@ -174,7 +242,7 @@ let API = (user_id, token, end_cursor, id_post) => {
                                       "name": item["node"]["author"]["name"],
                                       "gender": item["node"]["author"]["gender"],
                                       "link": item["node"]["author"]["url"],
-                                      "avatar": ""
+                                      "avatar": item["node"]["author"]["profile_picture_depth_1"]["uri"]
                                     },
                                     "url": item["node"]["url"] ,
                                     "__typename": item["node"]["__typename"] ,
@@ -198,8 +266,11 @@ let API = (user_id, token, end_cursor, id_post) => {
                                 downloadCSVFromJson("Comment_"+id_post,dataComment);
                                 SendmessToPopup({
                                   type:"SUCCESS_LOAD",
-                                  data:{
-                                  }
+                                  data:dataComment,
+                                  id_groups: id_post.split('_')[0],
+                                  name_groups: "",
+                                  id_post: id_post.split('_')[1],
+                                  create_time: Date.now(),
                                 });
                               } 
                             }

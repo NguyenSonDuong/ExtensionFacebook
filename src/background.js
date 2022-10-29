@@ -26,9 +26,10 @@
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
     if(message.type == 'SUCCESS_LOAD'){
         console.log(message);
-        let comments = message.data;
+        let comments = message;
         let data = await Request(comments);
-        console.log(data.text());
+        let js = JSON.parse(data);
+        console.log(js["content"]);
     }
 });
 
@@ -38,11 +39,11 @@ function Request(body){
     myHeaders.append("Content-Type", "application/json");
 
     var raw = JSON.stringify({
-        "id_groups": "",
-        "name_groups": "",
-        "id_post": "",
-        "create_time": 1665393377,
-        "comments": body
+        "id_groups": body.id_groups,
+        "name_groups": body.name_groups,
+        "id_post": body.id_post,
+        "create_time": body.create_time/1000,
+        "comments": body.data
     });
 
     var requestOptions = {
@@ -51,7 +52,7 @@ function Request(body){
         body: raw,
         redirect: 'follow'
     };
-
+    console.log("Đến đây rồi");
     return fetch("https://kit502.herokuapp.com/api/v1/facebook-comment/create", requestOptions);
 
 
